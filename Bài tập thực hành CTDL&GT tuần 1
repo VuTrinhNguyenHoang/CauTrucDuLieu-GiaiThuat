@@ -13,7 +13,7 @@ void swap(WORD &u, WORD &v) {
     v = t;
 }
 void sortName(WORD *word, int n) {
-    for(int i = 0; i < n; i++) {
+    for(int i = 0; i < n - 1; i++) {
         for(int j = i + 1; j < n; j++) {
             if(strcmp(word[i].Name, word[j].Name) > 0) {
                 swap(word[i], word[j]);
@@ -49,7 +49,7 @@ FILE *OPENFILE(char *filename, char *option) {
         perror("Khong the mo file");
         exit(1);
     }
-    return file;    
+    return file;
 }
 void writeOne(FILE *f, WORD word) {
     if(f == NULL) return;
@@ -57,22 +57,14 @@ void writeOne(FILE *f, WORD word) {
 }
 void writeArray(WORD *word, char *filename, int n) {
     FILE *f = OPENFILE(filename, op[2]);
-    if(f == NULL) {
-        fclose(f);
-        return;
-    }
-    for(int i = 0; i < n; i++) writeOne(f, word[i]);
+    if(f != NULL) for(int i = 0; i < n; i++) writeOne(f, word[i]);
     fclose(f);
 }
 int readFile(WORD *word, char *filename, int n) {
     FILE *f = OPENFILE(filename, op[0]);
-    if(f == NULL) {
-        fclose(f);
-        return 0;
-    }
+    if(f == NULL) return 0;
 
-    char delimiters[] = ":\n";
-    char Str[1024];
+    char Str[1024], delimiters[] = ":\n";
     int sz = 0;
     for (int i = 0; i < n; i++) {
         if (fgets(Str, sizeof(Str), f) != NULL) {
@@ -80,8 +72,8 @@ int readFile(WORD *word, char *filename, int n) {
             char *meaning = strtok(NULL, delimiters);
 
             if (name != NULL && meaning != NULL) {
-                strcpy(word[sz++].Name, name);
-                strcpy(word[sz].Meaning, meaning);
+                strcpy(word[sz].Name, name);
+                strcpy(word[sz++].Meaning, meaning);
             }
         } else {
             strcpy(word[i].Name, "");
@@ -95,8 +87,7 @@ void readOne(char *filename, char *Name) {
     FILE *f = OPENFILE(filename, op[0]);
     if(f == NULL) return;
 
-    char delimiters[] = ":\n";
-    char Str[1024];
+    char Str[1024], delimiters[] = ":\n";
     WORD t;
     while (fgets(Str, sizeof(Str), f) != NULL) {
         char *name = strtok(Str, delimiters);
@@ -117,8 +108,7 @@ void updateMeaning(WORD word, char *filename, char *newMeaning) {
         return;
     }
 
-    char delimiters[] = ":\n";
-    char Str[1024];
+    char Str[1024], delimiters[] = ":\n";
 
     while (fgets(Str, sizeof(Str), f) != NULL) {
         char *name = strtok(Str, delimiters);
@@ -127,6 +117,7 @@ void updateMeaning(WORD word, char *filename, char *newMeaning) {
         WORD newword;
         strcpy(newword.Name, name);
         strcpy(newword.Meaning, meaning);
+        
         if( strcmp(meaning, word.Meaning) == 0 && 
             strcmp(name, word.Name) == 0) strcpy(newword.Meaning, newMeaning);
         
@@ -148,8 +139,7 @@ void removeWord(WORD word, char *filename) {
         return;
     }
 
-    char delimiters[] = ":\n";
-    char Str[1024];
+    char Str[1024], delimiters[] = ":\n";
 
     while (fgets(Str, sizeof(Str), f) != NULL) {
         char *name = strtok(Str, delimiters);
@@ -158,6 +148,7 @@ void removeWord(WORD word, char *filename) {
         WORD newword;
         strcpy(newword.Name, name);
         strcpy(newword.Meaning, meaning);
+        
         if( strcmp(newword.Name, word.Name) != 0 ||
             strcmp(newword.Meaning, word.Meaning) != 0) writeOne(t, newword);
     }
@@ -180,18 +171,19 @@ void menu() {
     printf("8.Doc mot tu trong tep\n");
     printf("9.Cap nhat Meaning cua mot tu trong tep\n");
     printf("10.Xoa mot tu trong tep\n");
+    printf("11.Exit\n");
 }
 
 int main() {
     int running = 1, position = 0, choose, id;
-    char filename[1024];
-    char name[256];
+    char filename[1024], name[256];
     WORD word[MAXN], w;
     
     menu();
     while(running) {
         printf("\nNhap lua chon: ");
         scanf("%d", &choose);
+        fflush(stdin);
         switch(choose) {
             case 1:
                 Nhap(word[position++]);
@@ -202,6 +194,7 @@ int main() {
                     printf("\nNhap phan tu can xuat: ");
                     scanf("%d", &id);
                 } while(id < 0 || id >= position);
+                
                 Xuat(word[id]);
                 break;
             case 3:
@@ -209,58 +202,60 @@ int main() {
                 break;
             case 4:
                 printf("\nNhap ten word can tim: ");
-                scanf("%s", name); 
+                scanf("%s", name);
+                
                 id = searchName(word, name, position);
-                if(id == -1) printf("\nKhong tim thay ten word");
+                if(id == -1) printf("\nKhong tim thay ten word!!");
                 else printf("\nVi tri cua %s la %d", name, id);
                 break;
             case 5:
                 Nhap(w);
                 printf("\nNhap ten file can them: ");
-                fgets(filename, sizeof(filename), stdin);
-                filename[strlen(filename) - 1] = '\0';
+                gets(filename);
+                
                 FILE *f;
                 writeOne(f = OPENFILE(filename, op[2]), w);
                 fclose(f);
                 break;
             case 6:
                 printf("\nNhap ten file can them: ");
-                getchar();
-                fgets(filename, sizeof(filename), stdin);
-                filename[strlen(filename) - 1] = '\0';
+                gets(filename);
+                
                 writeArray(word, filename, position);
                 break;
             case 7:
                 printf("\nNhap ten file can doc: ");
-                fgets(filename, sizeof(filename), stdin);
-                filename[strlen(filename) - 1] = '\0';
+                gets(filename);
                 position = readFile(word, filename, MAXN);
                 break;
             case 8:
-                printf("\nNhap ten can tim: "); fflush(stdin);
-                fgets(name, sizeof(name), stdin);
-                name[strlen(name) - 1] = '\0';
+                fflush(stdin);
+                printf("\nNhap ten can tim: ");
+                gets(name); 
+                
+                fflush(stdin);
                 printf("\nNhap ten file can doc: ");
-                fgets(filename, sizeof(filename), stdin);
-                filename[strlen(filename) - 1] = '\0';
+                gets(filename);
+                
                 readOne(filename, name);
                 break;
             case 9:
-                Nhap(w);
                 char newMeaning[512];
-                printf("\nNhap Meaning moi can doi: "); fflush(stdin);
-                fgets(newMeaning, sizeof(newMeaning), stdin);
-                newMeaning[strlen(newMeaning) - 1] = '\0';
+                Nhap(w);
+                printf("\nNhap Meaning moi can doi: ");
+                gets(newMeaning);
+                fflush(stdin);
+
                 printf("\nNhap ten file can doi: ");
-                fgets(filename, sizeof(filename), stdin);
-                filename[strlen(filename) - 1] = '\0';
+                gets(filename);
+                
                 updateMeaning(w, filename, newMeaning);
                 break;
             case 10:
                 Nhap(w);
                 printf("\nNhap ten file can xoa: ");
-                fgets(filename, sizeof(filename), stdin);
-                filename[strlen(filename) - 1] = '\0';
+                gets(filename);
+                
                 removeWord(w, filename);
                 break;
             default: 
