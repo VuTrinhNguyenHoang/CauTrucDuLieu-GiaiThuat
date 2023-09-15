@@ -1,0 +1,120 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+const int MAX = 50;
+
+struct Student {
+	int mssv;
+	char fullName[MAX];
+	char gender[MAX];
+	char Address[MAX];
+	double diemTB;
+};
+void swap(Student &a, Student &b) {
+	Student t = a;
+	a = b;
+	b = t;
+}
+void Nhap(Student &u) {
+	printf("\nNhap mssv: ");
+	scanf("%d", &u.mssv);
+	fflush(stdin);
+	printf("\nNhap Ho va Ten: ");
+	gets(u.fullName);
+	fflush(stdin);
+	printf("\nNhap gioi tinh: ");
+	gets(u.gender);
+	fflush(stdin);
+	printf("\nNhap dia chi: ");
+	gets(u.Address);
+	printf("\nNhap diem trung binh: ");
+	scanf("%lf", &u.diemTB);
+}
+void Xuat(Student u) {
+	printf("\n%-10d %-30s %-10s %-30s %10.2f", u.mssv, u.fullName, u.gender, u.Address, u.diemTB);
+}
+void NhapMang(Student *student, int &n) {
+	do {
+		printf("\nSo luong can nhap: ");
+		scanf("%d", &n);
+	} while(n <= 0 || n >= MAX);
+	
+	for(int i = 0; i < n; i++) Nhap(student[i]);
+}
+void XuatMang(Student *student, int n) {
+	printf("\n%-10s %-30s %-10s %-30s %10s", "MSSV", "Ho va Ten", "Gioi tinh", "Dia chi", "Diem TB");
+	for(int i = 0; i < n; i++) Xuat(student[i]);
+}
+void SapxepdiemTb(Student *student, int n) {
+	for(int i = 0; i < n - 1; i++) 
+		for(int j = i + 1; j < n; j++) 
+			if(student[i].diemTB > student[j].diemTB)
+				swap(student[i], student[j]);
+}
+void SapxepName(Student *student, int n) {
+	for(int i = 0; i < n - 1; i++) 
+		for(int j = i + 1; j < n; j++) 
+			if(strcmp(student[i].fullName, student[j].fullName) > 0)
+				swap(student[i], student[j]);
+}
+int searchMSSV(Student *student, int mssv, int n) {
+	int i = 0;
+	while(i < n && student[i].mssv != mssv) i++;
+	return (i < n ? i : -1);
+}
+void SearchThongtin(Student *student, int mssv, int n) {
+	int id = searchMSSV(student, mssv, n);
+	if(id == -1) printf("\nKhong tim thay!");
+	else Xuat(student[id]);
+}
+FILE *openfile(char *filename, char *option) {
+	FILE *f = fopen(filename, option);
+	if(f == NULL) {
+		printf("\nKhong mo dc file!!");
+		exit(1);
+	}
+	return f;
+}
+void writeMang(char *filename, Student *student, int n) {
+	FILE *f = openfile(filename, "wb");
+	if(f == NULL) return;
+	
+	for(int i = 0; i < n; i++) {
+		fwrite(student + i, sizeof(Student), 1, f);
+	}
+}
+void readMang(char *filename, Student *student, int &n) {
+	FILE *f = openfile(filename, "rb");
+	if(f == NULL) return;
+	
+	int i = 0;
+	while(fread(student + i, sizeof(Student), 1, f) > 0) i++;
+	n = i;	
+}
+void fix(char *filename, int mssv) {
+	FILE *f = openfile(filename, "rb");
+	if(f == NULL) return;
+	
+	fseek(f, 0, SEEK_END);
+	int n = ftell(f) / sizeof(Student), mssv;
+	
+	while(1) {
+		system("cls");
+		printf("\nMSSV can sua: ");
+		scanf("%d", &mssv);
+		
+		while()
+	}
+}
+
+
+int main() {
+	Student student[MAX];
+	int n;
+//	NhapMang(student, n);
+//	writeMang("inp.bin", student, n);
+	
+	readMang("inp.bin", student, n);
+
+	return 0;
+}
