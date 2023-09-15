@@ -65,7 +65,7 @@ int searchMSSV(Student *student, int mssv, int n) {
 }
 void SearchThongtin(Student *student, int mssv, int n) {
 	int id = searchMSSV(student, mssv, n);
-	if(id == -1) printf("\nKhong tim thay!");
+	if(id == -1) printf("\nKhong tim thay sinh vien co MSSV %d!");
 	else Xuat(student[id]);
 }
 FILE *openfile(char *filename, char *option) {
@@ -81,7 +81,7 @@ void writeMang(char *filename, Student *student, int n) {
 	if(f == NULL) return;
 	
 	for(int i = 0; i < n; i++) fwrite(student + i, sizeof(Student), 1, f);
-    fclose(f);
+	fclose(f);
 }
 void readMang(char *filename, Student *student, int &n) {
 	FILE *f = openfile(filename, "rb");
@@ -108,7 +108,7 @@ void fix(char *filename) {
         scanf("%c", &choose);
         if(choose == 'K') break;
 		
-        printf("\nMSSV can sua:");
+        printf("\nMSSV can sua?:");
 		scanf("%d", &mssv);
 
 		while(fread(&student, sizeof(Student), 1, f) > 0) {
@@ -142,21 +142,20 @@ void removeStudent(char *filename, Student student) {
 
 	if(found == 0) {
 		printf("\nKhong tim thay sinh vien co MSSV %d", student.mssv);
-		return;
+	} else {
+		while (fread(&st, sizeof(Student), 1, f) > 0) {
+			fseek(f, -2 * sizeof(Student), SEEK_CUR);
+			fwrite(&st, sizeof(Student), 1, f);
+			fseek(f, 2 * sizeof(Student), SEEK_CUR);
+		}
+
+		// Truncate (cắt đuôi) tệp để xóa bản ghi cuối cùng
+		int newSize = ftell(f);
+		ftruncate(fileno(f), newSize - sizeof(Student));
+
+		printf("\nDa xoa sinh vien co MSSV %d", student.mssv);
 	}
-
-	while (fread(&st, sizeof(Student), 1, f) > 0) {
-		fseek(f, -2 * sizeof(Student), SEEK_CUR);
-		fwrite(&st, sizeof(Student), 1, f);
-		fseek(f, 2 * sizeof(Student), SEEK_CUR);
-	}
-
-	// Truncate (cắt đuôi) tệp để xóa bản ghi cuối cùng
-	int newSize = ftell(f);
-	ftruncate(fileno(f), newSize - sizeof(Student));
-
-	printf("\nDa xoa sinh vien co MSSV %d", student.mssv);
-    
+	
     fclose(f);
 }
 
