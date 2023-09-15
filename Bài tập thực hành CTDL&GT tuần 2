@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 const int MAX = 50;
 
 struct Student {
@@ -79,42 +80,87 @@ void writeMang(char *filename, Student *student, int n) {
 	FILE *f = openfile(filename, "wb");
 	if(f == NULL) return;
 	
-	for(int i = 0; i < n; i++) {
-		fwrite(student + i, sizeof(Student), 1, f);
-	}
+	for(int i = 0; i < n; i++) fwrite(student + i, sizeof(Student), 1, f);
+    fclose(f);
 }
 void readMang(char *filename, Student *student, int &n) {
 	FILE *f = openfile(filename, "rb");
 	if(f == NULL) return;
 	
 	int i = 0;
-	while(fread(student + i, sizeof(Student), 1, f) > 0) i++;
-	n = i;	
-}
-void fix(char *filename, int mssv) {
-	FILE *f = openfile(filename, "rb");
-	if(f == NULL) return;
-	
-	fseek(f, 0, SEEK_END);
-	int n = ftell(f) / sizeof(Student), mssv;
-	
-	while(1) {
-		system("cls");
-		printf("\nMSSV can sua: ");
-		scanf("%d", &mssv);
-		
-		while()
-	}
-}
+	while(fread(student + i, sizeof(Student), 1, f) > 0 && i < MAX) i++;
+	n = i;
 
+    fclose(f);
+}
+void fix(char *filename) {
+	FILE *f = openfile(filename, "rb+");
+	if(f == NULL) return;
+
+    Student student;
+	char choose;
+    int mssv;
+	while(1) {
+		// system("cls");
+        rewind(f);
+        printf("\nco muon sua? (C/K): ");
+        fflush(stdin);
+        scanf("%c", &choose);
+        if(choose == 'K') break;
+		
+        printf("\nMSSV can sua:");
+		scanf("%d", &mssv);
+
+		while(fread(&student, sizeof(Student), 1, f) > 0) {
+            if(student.mssv == mssv) {
+                Xuat(student);
+                fflush(stdin);
+                Nhap(student);
+
+                fseek(f, -sizeof(Student), SEEK_CUR);
+                fwrite(&student, sizeof(Student), 1, f);
+                fseek(f, sizeof(Student), SEEK_CUR);
+            }
+        }
+	}
+
+    fclose(f);
+}
+void removeStudent(char *filename, Student student) {
+    FILE *f = openfile(filename, "rb+");
+    if (f == NULL) return;
+
+	Student st;
+    int found = 0;
+
+    while (fread(&st, sizeof(Student), 1, f) > 0) {
+        if (st.mssv == student.mssv) {
+            found = 1;
+            break;
+        }
+    }
+
+	if(found == 0) {
+		printf("\nKhong tim thay sinh vien co MSSV %d", student.mssv);
+		return;
+	}
+
+	while (fread(&st, sizeof(Student), 1, f) > 0) {
+		fseek(f, -2 * sizeof(Student), SEEK_CUR);
+		fwrite(&st, sizeof(Student), 1, f);
+		fseek(f, 2 * sizeof(Student), SEEK_CUR);
+	}
+
+	// Truncate (cắt đuôi) tệp để xóa bản ghi cuối cùng
+	int newSize = ftell(f);
+	ftruncate(fileno(f), newSize - sizeof(Student));
+
+	printf("\nDa xoa sinh vien co MSSV %d", student.mssv);
+    
+    fclose(f);
+}
 
 int main() {
-	Student student[MAX];
-	int n;
-//	NhapMang(student, n);
-//	writeMang("inp.bin", student, n);
 	
-	readMang("inp.bin", student, n);
-
 	return 0;
 }
