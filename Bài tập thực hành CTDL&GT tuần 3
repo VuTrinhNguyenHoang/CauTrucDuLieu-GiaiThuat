@@ -1,0 +1,111 @@
+#include <stdio.h>
+
+struct Node {
+    int data;
+    Node *pNext;
+};
+struct List {
+    Node *pHead;
+    Node *pTail;
+};
+void init(List &L) { L.pHead = L.pTail = NULL; }
+bool Exist(List L, int data) {
+    Node* p = L.pHead;
+    while(p != NULL) {
+        if(p->data == data) return true;
+        p = p->pNext;
+    }
+    return false;
+}
+Node* createNode(int data) {
+    Node *node = new Node;
+    if(node == NULL) {
+        printf("Full Memory!!");
+        return NULL;
+    }
+
+    node->data = data;
+    node->pNext = NULL;
+    return node;
+}
+void push_front(List &L, int data) {
+    if(Exist(L, data)) {
+        printf("%d Exist!\n", data);
+        return;
+    }
+
+    Node* node = createNode(data);
+    if(node == NULL) return;
+
+    if(L.pHead == NULL) L.pHead = L.pTail = node;
+    else {
+        node->pNext = L.pHead;
+        L.pHead = node;
+    }
+}
+void inputList(List &L, int &n) {
+    do {
+        scanf("%d", &n);
+    } while (n < 0);
+
+    for(int i = 0, data; i < n; i++) {
+        scanf("%d", &data);
+        push_front(L, data);
+    }
+}
+void eraseNode(List &L, int data) {
+    Node* p = L.pHead;
+    if(p->data == data) {
+        L.pHead = p->pNext;
+        delete p;
+        if(L.pHead == NULL) L.pTail == NULL;
+        return;
+    }
+
+    while(p != L.pTail && p != NULL) {
+        if(p->pNext->data == data) {
+            Node* node = p->pNext->pNext;
+            delete p->pNext;
+            p->pNext = node;
+            return;
+        }
+        p = p->pNext;
+    }
+}
+void displayList(List L) {
+    Node* p = L.pHead;
+    while(p != NULL) {
+        printf("%d ", p->data);
+        p = p->pNext;
+    }
+    printf("\n");
+}
+void Separating_List(List &L, List &L1, int x) {
+    Node* p = L.pHead;
+    while(p != NULL) {
+        int data = p->data;
+        if(data > x) {
+            push_front(L1, data);
+            p = p->pNext;
+            eraseNode(L, data);
+            continue;
+        }
+        p = p->pNext;
+    }
+}
+void Separating_List(List &L, List &L1, List &L2, int x) {
+    Node* p = L.pHead;
+    while(p != NULL) {
+        int data = p->data;
+        if(data > x) push_front(L1, data);
+        else push_front(L2, data);
+
+        p = p->pNext;
+        eraseNode(L, data);
+    }
+}
+
+int main() {
+    
+    return 0;
+}
