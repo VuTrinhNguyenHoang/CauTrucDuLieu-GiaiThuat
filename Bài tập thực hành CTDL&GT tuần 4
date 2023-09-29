@@ -1,0 +1,103 @@
+#include <stdio.h>
+
+struct Node {
+	float heSo;
+	int soMu;
+	Node* pNext;
+};
+struct List {
+	Node* first;
+	Node* last;
+};
+void init(List &L) { L.first = L.last = NULL; }
+Node* createNode(float heSo, int soMu) {
+	Node* node = new Node;
+	if(node == NULL) return NULL;
+	
+	node->heSo = heSo;
+	node->soMu = soMu;
+	node->pNext = NULL;
+	return node;
+}
+void push_back(List &L, float heSo, int soMu) {
+	Node* node = createNode(heSo, soMu);
+	if(node == NULL) return;
+	
+	if(L.first == NULL) L.first = L.last = node;
+	else {
+		L.last->pNext = node;
+		L.last = node;
+	}
+}
+void nhapDaThuc(List &L) {
+	float heSo;
+	int soMu;
+	printf("\nBat  dau  nhap  da  thuc  (nhap  he  so  0  de ket thuc): \n");
+	do {
+		printf("\nNhap he so: "); 
+		scanf("%f", &heSo); 
+		if (heSo == 0) 
+			break; 
+		printf("\nNhap so mu: "); 
+		scanf("%d", &soMu); 
+		push_back(L, heSo, soMu);
+	} while (heSo);
+	printf("\nDa nhap da thuc xong: \n");
+}
+void xuatDonThuc(float heSo, int soMu) { // can fix	
+	if (soMu > 1) {
+		if(heSo != 1) printf("%.0f*x^%d ", heSo, soMu);
+		else printf("x^%d ", soMu);
+	}
+	else if (soMu == 1) {
+		if(heSo != 1) printf("%.0f*x ", heSo);
+		else printf("x ", heSo);
+	} else printf("%.0f", heSo);
+}
+void xuatDanhSach(List L) { // can fix
+	Node* p = L.first;
+	while(p != NULL) {
+		xuatDonThuc(p->heSo, p->soMu);
+		p = p->pNext;
+		if(p != NULL) printf("+ ");
+	}
+}
+void phepTinhDaThuc(List &L, float heSo, int soMu) { // can fix
+	Node* p = L.first;
+	while(p != NULL) {
+		if(p->soMu == soMu) {
+			p->heSo += heSo;
+			return;
+		}
+		p = p->pNext;
+	}
+	
+	push_back(L, heSo, soMu);
+}
+List truDaThuc(List L, List L1) { // can fix
+	List new_list; init(new_list);
+	Node* p1 = L.first;
+	while (p1 != NULL) {
+		Node* p2 = L1.first;
+		bool exist = 0;
+		while (p2 != NULL) {
+			if (p2->soMu == p1->soMu) {
+				exist = 1;
+				break;
+			}
+			
+			p2 = p2->pNext;
+		}
+		
+		if(exist) phepTinhDaThuc(new_list, (p1->heSo)-(p2->heSo), p1->soMu);
+		else phepTinhDaThuc(new_list, p1->heSo, p1->soMu);
+		
+		p1 = p1->pNext;
+	}
+	return new_list;
+}
+
+int main() {
+	
+	return 0;
+}
