@@ -49,7 +49,8 @@ void nhapDaThuc(DaThuc &daThuc) {
 		
         push_back(daThuc, heSo, soMu);
 	} while (heSo);
-	printf("Da nhap da thuc xong: \n");
+
+    system("cls");
 }
 void removeNode(DaThuc &daThuc) {
     Node* p = daThuc.pHead;
