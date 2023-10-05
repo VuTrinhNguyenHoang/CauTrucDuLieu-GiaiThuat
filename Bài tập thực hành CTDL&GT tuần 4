@@ -1,103 +1,261 @@
 #include <stdio.h>
-
+#include <stdlib.h>
+struct DonThuc {
+    float heSo;
+    int soMu;
+};
 struct Node {
-	float heSo;
-	int soMu;
-	Node* pNext;
+    DonThuc data;
+    Node* pNext;
 };
-struct List {
-	Node* first;
-	Node* last;
+struct DaThuc {
+    Node* pHead;
+    Node* pTail;
 };
-void init(List &L) { L.first = L.last = NULL; }
+DonThuc createDonThuc(float heSo, int soMu) {
+    DonThuc donThuc;
+    donThuc.heSo = heSo;
+    donThuc.soMu = soMu;
+    return donThuc;
+}
 Node* createNode(float heSo, int soMu) {
-	Node* node = new Node;
-	if(node == NULL) return NULL;
-	
-	node->heSo = heSo;
-	node->soMu = soMu;
-	node->pNext = NULL;
-	return node;
+    DonThuc donThuc = createDonThuc(heSo, soMu);
+    Node* node = new Node;
+    node->data = donThuc;
+    node->pNext = NULL;
+    return node;
 }
-void push_back(List &L, float heSo, int soMu) {
-	Node* node = createNode(heSo, soMu);
-	if(node == NULL) return;
-	
-	if(L.first == NULL) L.first = L.last = node;
-	else {
-		L.last->pNext = node;
-		L.last = node;
-	}
+void init(DaThuc &daThuc) { daThuc.pHead = daThuc.pTail = NULL; }
+void push_back(DaThuc &daThuc, float heSo, int soMu) {
+    Node* node = createNode(heSo, soMu);
+    if(daThuc.pHead == NULL) daThuc.pHead = daThuc.pTail = node;
+    else {
+        daThuc.pTail->pNext = node;
+        daThuc.pTail = node; 
+    }
 }
-void nhapDaThuc(List &L) {
+void nhapDaThuc(DaThuc &daThuc) {
 	float heSo;
 	int soMu;
-	printf("\nBat  dau  nhap  da  thuc  (nhap  he  so  0  de ket thuc): \n");
+	printf("\nBat  dau  nhap  da  thuc  (nhap  he  so  0  de ket thuc): ");
 	do {
 		printf("\nNhap he so: "); 
-		scanf("%f", &heSo); 
-		if (heSo == 0) 
-			break; 
-		printf("\nNhap so mu: "); 
-		scanf("%d", &soMu); 
-		push_back(L, heSo, soMu);
+		scanf("%f", &heSo);
+		
+        if (heSo == 0) break; 
+		
+        printf("\nNhap so mu: "); 
+		scanf("%d", &soMu);
+		
+        push_back(daThuc, heSo, soMu);
 	} while (heSo);
-	printf("\nDa nhap da thuc xong: \n");
+	printf("Da nhap da thuc xong: \n");
 }
-void xuatDonThuc(float heSo, int soMu) { // can fix	
-	if (soMu > 1) {
-		if(heSo != 1) printf("%.0f*x^%d ", heSo, soMu);
-		else printf("x^%d ", soMu);
-	}
-	else if (soMu == 1) {
-		if(heSo != 1) printf("%.0f*x ", heSo);
-		else printf("x ", heSo);
-	} else printf("%.0f", heSo);
+void removeNode(DaThuc &daThuc) {
+    Node* p = daThuc.pHead;
+    Node* prev = NULL;
+
+    while(p != NULL) {
+        if(p->data.heSo == 0) {
+            if(prev == NULL) daThuc.pHead = p->pNext;
+            else prev->pNext = p->pNext;
+
+            if(p == daThuc.pTail) {
+                daThuc.pTail = prev;
+                daThuc.pTail->pNext = NULL;
+            }
+            Node* t = p;
+            p = p->pNext;
+
+            delete t;
+        } else {
+            prev = p;
+            p = p->pNext;
+        }
+    }
 }
-void xuatDanhSach(List L) { // can fix
-	Node* p = L.first;
-	while(p != NULL) {
-		xuatDonThuc(p->heSo, p->soMu);
-		p = p->pNext;
-		if(p != NULL) printf("+ ");
-	}
+void sortDaThuc(DaThuc &daThuc) {
+    for(Node* p = daThuc.pHead; p != daThuc.pTail; p = p->pNext)
+        for(Node* q = p->pNext; q != NULL; q = q->pNext) {
+            if(p->data.soMu < q->data.soMu) {
+                DonThuc t = p->data;
+                p->data = q->data;
+                q->data = t;
+            } else if (p->data.soMu == q->data.soMu) {
+                p->data.heSo += q->data.heSo;
+                q->data.heSo = 0;
+            }
+        }
+    removeNode(daThuc);
 }
-void phepTinhDaThuc(List &L, float heSo, int soMu) { // can fix
-	Node* p = L.first;
-	while(p != NULL) {
-		if(p->soMu == soMu) {
-			p->heSo += heSo;
-			return;
-		}
-		p = p->pNext;
-	}
-	
-	push_back(L, heSo, soMu);
+DaThuc plusDaThuc(DaThuc a, DaThuc b) {
+    Node* p = a.pHead;
+    Node* q = b.pHead;
+
+    DaThuc daThuc; init(daThuc);
+    while(p != NULL && q != NULL) {
+        if(p->data.soMu == q->data.soMu) {
+            float heSo = p->data.heSo + q->data.heSo;
+            if(heSo) push_back(daThuc, heSo, p->data.soMu);
+
+            p = p->pNext;
+            q = q->pNext;
+        } else if (p->data.soMu > q->data.soMu) {
+            push_back(daThuc, p->data.heSo, p->data.soMu);
+            p = p->pNext;
+        } else {
+            push_back(daThuc, q->data.heSo, q->data.soMu);
+            q = q->pNext;
+        }
+    }
+
+    while(p != NULL) {
+        push_back(daThuc, p->data.heSo, p->data.soMu);
+        p = p->pNext;
+    }
+    while(q != NULL) {
+        push_back(daThuc, q->data.heSo, q->data.soMu);
+        q = q->pNext;
+    }
+
+    sortDaThuc(daThuc);
+    return daThuc;
 }
-List truDaThuc(List L, List L1) { // can fix
-	List new_list; init(new_list);
-	Node* p1 = L.first;
-	while (p1 != NULL) {
-		Node* p2 = L1.first;
-		bool exist = 0;
-		while (p2 != NULL) {
-			if (p2->soMu == p1->soMu) {
-				exist = 1;
-				break;
-			}
-			
-			p2 = p2->pNext;
-		}
-		
-		if(exist) phepTinhDaThuc(new_list, (p1->heSo)-(p2->heSo), p1->soMu);
-		else phepTinhDaThuc(new_list, p1->heSo, p1->soMu);
-		
-		p1 = p1->pNext;
-	}
-	return new_list;
+DaThuc minusDaThuc(DaThuc a, DaThuc b) {
+    Node* p = a.pHead;
+    Node* q = b.pHead;
+
+    DaThuc daThuc; init(daThuc);
+    while(p != NULL && q != NULL) {
+        if(p->data.soMu == q->data.soMu) {
+            float heSo = p->data.heSo - q->data.heSo;
+            if(heSo) push_back(daThuc, heSo, p->data.soMu);
+
+            p = p->pNext;
+            q = q->pNext;
+        } else if (p->data.soMu > q->data.soMu) {
+            push_back(daThuc, p->data.heSo, p->data.soMu);
+            p = p->pNext;
+        } else {
+            push_back(daThuc, -q->data.heSo, q->data.soMu);
+            q = q->pNext;
+        }
+    }
+
+    while(p != NULL) {
+        push_back(daThuc, p->data.heSo, p->data.soMu);
+        p = p->pNext;
+    }
+    while(q != NULL) {
+        push_back(daThuc, -q->data.heSo, q->data.soMu);
+        q = q->pNext;
+    }
+
+    sortDaThuc(daThuc);
+    return daThuc;
+}
+DaThuc multiDaThuc(DaThuc a, DaThuc b) {
+    DaThuc daThuc; init(daThuc);
+    for(Node* p = a.pHead; p != NULL; p = p->pNext)
+        for(Node* q = b.pHead; q != NULL; q = q->pNext)
+            push_back(  daThuc, 
+                        p->data.heSo * q->data.heSo, 
+                        p->data.soMu + q->data.soMu);
+    sortDaThuc(daThuc);
+    return daThuc;
+}
+DaThuc divideDaThuc(DaThuc a, DaThuc b, DaThuc &c) {
+    DaThuc daThuc; init(daThuc);
+    
+    Node* q = b.pHead;
+    while(q != NULL) {
+        if(q->data.heSo != 0) break;
+        q = q->pNext;
+    }
+
+    if(q == NULL) {
+        printf("da thuc b bang 0\n");
+        exit(1);
+    }
+
+    while(a.pHead != NULL && a.pHead->data.soMu >= b.pHead->data.soMu) {
+        DonThuc tmp = createDonThuc(a.pHead->data.heSo / b.pHead->data.heSo, 
+                                    a.pHead->data.soMu - b.pHead->data.soMu);
+
+        push_back(daThuc, tmp.heSo, tmp.soMu);
+
+        DaThuc tmpDivisor; init(tmpDivisor);
+        for(Node* p = b.pHead; p != NULL; p = p->pNext) {
+            DonThuc tmpTerm = createDonThuc(tmp.heSo * p->data.heSo,
+                                            tmp.soMu + p->data.soMu);
+            push_back(tmpDivisor, tmpTerm.heSo, tmpTerm.soMu);
+        }
+
+        DaThuc tmpResult = minusDaThuc(a, tmpDivisor);
+        removeNode(tmpResult);
+        a = tmpResult;
+    }
+
+    c = a;
+    return daThuc;
+}
+void display(DaThuc a) {
+    Node* p = a.pHead;
+    if(p == NULL) {
+        printf("0\n");
+        return;
+    }
+
+    while(p != NULL) {
+        float heSo = p->data.heSo;
+        int soMu = p->data.soMu;
+
+        if(p == a.pHead) {
+            if(soMu == 0) {
+                printf("%.0f ", heSo);
+            } else if(soMu == 1) {
+                if(abs(heSo) == 1) printf("%sx ", (heSo == 1.0 ? "" : "-"));
+                else printf("%.0fx ", heSo);
+            } else if(abs(heSo) == 1) {
+                printf("%sx^%d ", (heSo == 1.0 ? "" : "-"), soMu);
+            } else printf("%.0fx^%d ", heSo, soMu);
+        } else {
+            if(soMu == 0) {
+                printf("%s %.0f ", (heSo > 0 ? "+" : "-"), abs(heSo));
+            } else if(soMu == 1) {
+                if(abs(heSo) == 1) printf("%s x ", (heSo == 1.0 ? "+" : "-"));
+                else printf("%s %.0fx ", (heSo > 0 ? "+" : "-"), abs(heSo));
+            } else if(abs(heSo) == 1) {
+                printf("%s x^%d ", (heSo == 1.0 ? "+" : "-"), soMu);
+            } else printf("%s %.0fx^%d ", (heSo > 0 ? "+" : "-"), abs(heSo), soMu);
+        }
+        p = p->pNext;
+    }
+    printf("\n");
 }
 
 int main() {
-	
-	return 0;
+    DaThuc a, b, c; init(a), init(b), init(c);
+    printf("\nNhap Da Thuc A"); nhapDaThuc(a); 
+    printf("\nNhap Da Thuc B"); nhapDaThuc(b);
+
+    // sắp xếp lại các phần tử trong Đa Thức theo thứ tự đúng
+    sortDaThuc(a), sortDaThuc(b);
+
+    printf("A = "); display(a);
+    printf("B = "); display(b);
+
+    // Phép cộng
+    printf("A + B = "); display(plusDaThuc(a, b));
+    
+    // Phép trừ
+    printf("A - B = "); display(minusDaThuc(a, b));
+    
+    // Phép nhân
+    printf("A * B = "); display(multiDaThuc(a, b));
+    
+    // Phép chia
+    printf("A / B = "); display(divideDaThuc(a, b, c));
+    printf("A / B Du C = "); display(c);
+    return 0;
 }
