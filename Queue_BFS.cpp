@@ -39,11 +39,10 @@ void bfs(int x = 1) {
     Queue q;
     q.push(x);
     used[x] = 1;
-    cout << 1 << ' ';
     while(!q.empty()) {
         int u = q.top(); q.pop();
+        cout << u << ' ';
         for(int i = 1; i <= n; i++) if(Edge[u][i] && !used[i]) {
-            cout << i << ' ';
             q.push(i);
             used[i] = 1;
         }
