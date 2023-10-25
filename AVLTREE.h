@@ -10,7 +10,7 @@ public:
 
     AVLNode(int value) : data(value), height(1), left(NULL), right(NULL) {}
     
-    bool compare(int value) {
+    int compare(int value) {
         if(this->data > value) return 1;
         if(this->data < value) return 2;
         return 0;
@@ -35,7 +35,7 @@ public:
     }
 
     int getSize() { return size; }
-    int getHeight(AVLNode* node) { return node == NULL ? 0 : node->height; }
+    int getHeight(AVLNode* node) { return (node == NULL ? 0 : node->height); }
 private:
     int size;
     AVLNode* root;
@@ -57,7 +57,7 @@ private:
             if(node->left->compare(value) == 2) node->left = leftRotation(node->left);
             return rightRotation(node);
         } else if (balance < -1) {
-            if(node->left->compare(value) == 1) node->right = rightRotation(node->right);
+            if(node->right->compare(value) == 1) node->right = rightRotation(node->right);
             return leftRotation(node);
         }
 
